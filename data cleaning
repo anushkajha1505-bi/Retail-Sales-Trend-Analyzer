@@ -1,0 +1,78 @@
+"""
+Notebook 01: Data Cleaning
+==========================
+Project: Retail Sales Trend Analyzer
+Author: Anushka Jha
+GitHub: github.com/Anu-1505/retail-sales-analysis
+
+This script handles all data cleaning steps before analysis.
+Run this first before any other notebook.
+"""
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# ─── STEP 1: Load Raw Data ───────────────────────────────────────────────────
+
+df = pd.read_csv("data/raw/retail_transactions.csv", encoding="latin-1")
+print(f" Loaded dataset: {df.shape[0]} rows, {df.shape[1]} columns")
+print(df.head())
+
+# ─── STEP 2: Inspect Missing Values ──────────────────────────────────────────
+
+print("\n--- Missing Values ---")
+missing = df.isnull().sum()
+print(missing[missing > 0])
+
+# Drop rows with missing Postal Code (non-essential for our analysis)
+df.dropna(subset=["Postal Code"], inplace=True)
+print(f" After dropping null Postal Codes: {df.shape[0]} rows")
+
+# ─── STEP 3: Remove Duplicates ───────────────────────────────────────────────
+
+dupes = df.duplicated(subset=["Order ID", "Product ID"]).sum()
+print(f"\n Found {dupes} duplicate Order-Product pairs — removing...")
+df.drop_duplicates(subset=["Order ID", "Product ID"], inplace=True)
+print(f" After deduplication: {df.shape[0]} rows")
+
+# ─── STEP 4: Fix Data Types ──────────────────────────────────────────────────
+
+df["Order Date"] = pd.to_datetime(df["Order Date"], dayfirst=True)
+df["Ship Date"]  = pd.to_datetime(df["Ship Date"],  dayfirst=True)
+
+# Extract useful time features
+df["Year"]    = df["Order Date"].dt.year
+df["Month"]   = df["Order Date"].dt.month
+df["Quarter"] = df["Order Date"].dt.quarter
+df["Month_Name"] = df["Order Date"].dt.strftime("%b")
+
+print("\n Date columns parsed and time features extracted")
+
+# ─── STEP 5: Outlier Detection & Capping (Sales) ─────────────────────────────
+
+Q1 = df["Sales"].quantile(0.25)
+Q3 = df["Sales"].quantile(0.75)
+IQR = Q3 - Q1
+upper_cap = Q3 + 3 * IQR  # Using 3x IQR to keep high-value sales, just cap extreme outliers
+
+outliers = df[df["Sales"] > upper_cap].shape[0]
+df["Sales"] = df["Sales"].clip(upper=upper_cap)
+print(f"\n Capped {outliers} extreme Sales outliers above ${upper_cap:.2f}")
+
+# ─── STEP 6: Add Derived Columns ─────────────────────────────────────────────
+
+df["Profit_Margin"] = (df["Profit"] / df["Sales"]).replace([np.inf, -np.inf], 0).round(4)
+df["Revenue_per_Unit"] = (df["Sales"] / df["Quantity"]).round(2)
+
+print("\n Added Profit_Margin and Revenue_per_Unit columns")
+
+# ─── STEP 7: Save Cleaned Data ───────────────────────────────────────────────
+
+os.makedirs("data/cleaned", exist_ok=True)
+df.to_csv("data/cleaned/retail_cleaned.csv", index=False)
+print(f"\n✅ Cleaned data saved → data/cleaned/retail_cleaned.csv")
+print(f"   Final shape: {df.shape}")
+print("\n--- Final Column Summary ---")
+print(df.dtypes)
