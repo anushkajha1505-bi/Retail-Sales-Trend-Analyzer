@@ -106,7 +106,7 @@ openpyxl==3.1.2
 ## Key Analysis Steps
 
 ### 1. Data Cleaning (`01_data_cleaning.ipynb`)
-- Identified and handled ~3.2% missing values in the `Postal Code` column
+- Identified and handled ~30% missing values in the `Postal Code` column
 - Removed 47 duplicate order entries
 - Standardized date formats and extracted Year, Month, Quarter features
 - Capped outliers in `Sales` column using IQR method
