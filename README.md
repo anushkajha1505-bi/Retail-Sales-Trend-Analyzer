@@ -52,7 +52,7 @@ retail-sales-analysis/
 ## Dataset
 
 **Source:** [Kaggle - Superstore Sales Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
-**Rows:** ~10,000 transactions  
+**Rows:** ~50,000 transactions  
 **Columns include:** Order Date, Category, Sub-Category, Region, Sales, Quantity, Discount, Profit
 
 > If you want to use it locally, download from the link above and place it in `data/raw/retail_transactions.csv`.
@@ -106,7 +106,7 @@ openpyxl==3.1.2
 ## Key Analysis Steps
 
 ### 1. Data Cleaning (`01_data_cleaning.ipynb`)
-- Identified and handled ~30% missing values in the `Postal Code` column
+- Identified and handled ~15% missing values in the `Postal Code` column
 - Removed 47 duplicate order entries
 - Standardized date formats and extracted Year, Month, Quarter features
 - Capped outliers in `Sales` column using IQR method
